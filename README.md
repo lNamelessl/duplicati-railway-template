@@ -22,7 +22,7 @@ Railway attaches **one volume per service** (platform limit), mounted here at `/
 |---|---|
 | `DUPLICATI__WEBSERVICE_PASSWORD` | **Auto-generated per deploy** (24 alphanumeric chars). This is your web UI login. |
 | `SETTINGS_ENCRYPTION_KEY` | **Auto-generated per deploy** (64 hex chars). Encrypts Duplicati's config database at rest (`DUPLICATI__DISABLE_DB_ENCRYPTION=false`). |
-| `DUPLICATI__WEBSERVICE_ALLOWED_HOSTNAMES` | `${{RAILWAY_PUBLIC_DOMAIN}}`. Keeps Duplicati's host-name protection strict — never `*`. |
+| `DUPLICATI__WEBSERVICE_ALLOWED_HOSTNAMES` | `${{RAILWAY_PUBLIC_DOMAIN}}` plus Railway's `healthcheck.railway.app` probe host. Keeps Duplicati's host-name protection strict — never `*`. |
 
 ## First backup in 60 seconds
 

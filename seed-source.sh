@@ -90,5 +90,12 @@ EOF
     log "seeded $(find "$DEMO_DIR" -type f 2>/dev/null | wc -l) files under $DEMO_DIR"
 fi
 
-log "starting duplicati-server on port ${DUPLICATI__WEBSERVICE_PORT:-8200} ..."
+# --- align the listening port with Railway ------------------------------
+# Railway injects PORT (default 8080) and probes it for healthchecks with
+# Host: healthcheck.railway.app. Outside Railway (plain docker run) PORT is
+# unset, so fall back to Duplicati's native 8200.
+LISTEN_PORT="${PORT:-8200}"
+export DUPLICATI__WEBSERVICE_PORT="$LISTEN_PORT"
+
+log "starting duplicati-server on port $LISTEN_PORT ..."
 exec duplicati-server
