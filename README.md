@@ -1,6 +1,6 @@
 # Duplicati on Railway
 
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/REPLACE_WITH_TEMPLATE_CODE)
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/duplicati-template)
 
 Encrypted, incremental, scheduled backups — powered by [Duplicati](https://github.com/duplicati/duplicati) (pinned `2.4.0.0` stable), deployed in one click.
 

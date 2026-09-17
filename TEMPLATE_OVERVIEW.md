@@ -1,12 +1,12 @@
 # Duplicati on Railway — Encrypted Backups of Your Data to Your Own Bucket
 
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/waF4pp)
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/duplicati-template)
 
 Duplicati is a battle-tested backup agent: incremental, compressed, and encrypted **client-side with AES-256 before anything leaves your container**. This template deploys it with zero deploy-time prompts and no pre-required credentials — everything secret is generated per deployment, and a demo data folder plus a local backup destination are pre-wired so your first backup round-trip takes about a minute.
 
 ## What this template provisions
 
-- **One service** (`duplicati`) built from the pinned upstream image `duplicati/duplicati:2.4.0.0` (source: https://github.com/lNamelessl/duplicati-railway-template), web UI on port 8200 exposed at your Railway domain.
+- **One service** (`duplicati`) built from the pinned upstream image `duplicati/duplicati:2.4.0.0` (source: https://github.com/lNamelessl/duplicati-railway-template), web UI exposed at your Railway domain.
 - **One volume** mounted at `/data` — Duplicati's config database and job state. Boot scripts expose two extra persistent paths on that volume: `/source` (data to protect, seeded with demo files on first boot only) and `/backups` (a ready local-folder backup destination).
 - **A public domain** routed to the UI, plus a healthcheck (`/`, 300 s timeout) and an auto-restart policy.
 
@@ -37,7 +37,7 @@ Deploying gives you a working Duplicati server in about two minutes: one service
 
 ## About Hosting
 
-Hosting Duplicati yourself means your data and your encryption keys never touch a third-party backup service. This template runs the official `duplicati/duplicati` image pinned to the stable `2.4.0.0` release, so behavior matches upstream documentation. The web UI is served on port 8200 and protected by a per-deployment generated password; unauthenticated API calls are rejected. The config database is encrypted at rest with the generated `SETTINGS_ENCRYPTION_KEY`. Railway attaches one volume per service, mounted here at `/data`, with `/source` and `/backups` exposed as persistent paths on that volume; data you place under `/source` (via `railway ssh` or pushes from other services) is backed up on schedule with client-side AES-256. Cost is roughly $5/month for the service plus storage; the demo footprint is a few megabytes.
+Hosting Duplicati yourself means your data and your encryption keys never touch a third-party backup service. This template runs the official `duplicati/duplicati` image pinned to the stable `2.4.0.0` release, so behavior matches upstream documentation. The web UI is served on the service port and protected by a per-deployment generated password; unauthenticated API calls are rejected. The config database is encrypted at rest with the generated `SETTINGS_ENCRYPTION_KEY`. Railway attaches one volume per service, mounted here at `/data`, with `/source` and `/backups` exposed as persistent paths on that volume; data you place under `/source` (via `railway ssh` or pushes from other services) is backed up on schedule with client-side AES-256. Cost is roughly $5/month for the service plus storage; the demo footprint is a few megabytes.
 
 ## Why Deploy
 
