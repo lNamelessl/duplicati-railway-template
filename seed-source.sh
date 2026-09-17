@@ -1,19 +1,46 @@
 #!/bin/sh
-# Boot-time seeder for the Duplicati Railway template.
+# Boot-time setup for the Duplicati Railway template.
 #
-# Populates /source/demo with a few small files so the first backup test is
-# instant. Runs on EVERY container start but seeds ONLY when the directory
-# is empty — user data is never touched. This runs at boot (not build time)
-# because a mounted volume shadows any content baked into the image.
+# Railway attaches a single volume per service (platform limit). This template
+# mounts it at /data — Duplicati's native config location — and exposes two
+# additional persistent paths on the SAME volume:
 #
-# Then hands off to the upstream CMD (duplicati-server) via exec, so the
-# server is PID-safe under tini and picks up the correct signal handling.
+#   /data                 Duplicati config DB + job state (native)
+#   /data/persist/source  -> symlinked as /source   (data to protect)
+#   /data/persist/backups -> symlinked as /backups  (local-folder destination)
+#
+# The symlinks are (re)created on every boot; the data behind them lives on
+# the volume and survives redeploys. /source/demo is then seeded ONCE with a
+# few small files so the first backup test is instant — only when empty;
+# user data is never touched.
+#
+# Finally hands off to the upstream CMD (duplicati-server) via exec.
 set -u
 
 DEMO_DIR="/source/demo"
 
 log() { echo "[seed-source] $*"; }
 
+# --- persistent paths on the /data volume -------------------------------
+mkdir -p /data/persist/source /data/persist/backups 2>/dev/null || \
+    log "WARNING: could not create /data/persist (no volume mounted?)"
+
+link_persist() {
+    link_name="$1"   # e.g. /source
+    target="$2"      # e.g. /data/persist/source
+    if [ -L "$link_name" ]; then
+        return 0
+    elif [ -e "$link_name" ]; then
+        log "WARNING: $link_name exists and is not a symlink; leaving it alone"
+        return 0
+    fi
+    ln -s "$target" "$link_name" 2>/dev/null || log "WARNING: could not link $link_name -> $target"
+}
+
+link_persist /source /data/persist/source
+link_persist /backups /data/persist/backups
+
+# --- demo data seeding (first boot only) --------------------------------
 is_empty() {
     [ -z "$(ls -A "$1" 2>/dev/null)" ]
 }
@@ -60,7 +87,7 @@ EOF
     dd if=/dev/urandom of="$DEMO_DIR/photos/demo-photo-002.jpg" bs=1024 count=64 2>/dev/null || true
     dd if=/dev/urandom of="$DEMO_DIR/photos/demo-photo-003.jpg" bs=1024 count=64 2>/dev/null || true
 
-    log "seeded $(find "$DEMO_DIR" -type f | wc -l) files under $DEMO_DIR"
+    log "seeded $(find "$DEMO_DIR" -type f 2>/dev/null | wc -l) files under $DEMO_DIR"
 fi
 
 log "starting duplicati-server on port ${DUPLICATI__WEBSERVICE_PORT:-8200} ..."
